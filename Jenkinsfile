@@ -17,7 +17,7 @@ pipeline {
         stage('Build') {
             steps {
                 sh 'npm cache clean --force'
-                sh 'npm install --timeout=120000 --cache /path/to/npm_cache_directory'
+                sh 'npm install'
             }
         }
     }
