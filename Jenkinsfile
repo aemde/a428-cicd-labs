@@ -6,13 +6,13 @@ pipeline {
         }
     }
     stages {
-        stage('Set NPM Registry') {
-            steps {
-                script {
-                    sh 'npm config set registry https://registry.npm.taobao.org'
-                }
-            }
-        }
+//         stage('Set NPM Registry') {
+//             steps {
+//                 script {
+//                     sh 'npm config set registry https://registry.npm.taobao.org'
+//                 }
+//             }
+//         }
 
         stage('Build') {
             steps {
