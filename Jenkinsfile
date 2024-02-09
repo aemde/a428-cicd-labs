@@ -19,6 +19,10 @@ pipeline {
                 sh 'npm cache clean --force'
                 sh 'npm install'
             }
+        stage('Test') {
+            steps {
+             sh './jenkins/scripts/test.sh'
+           }
         }
     }
 }
