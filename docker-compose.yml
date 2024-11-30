@@ -9,6 +9,8 @@ services:
       - .:/app
     command: sh -c "npm install && npm start"
     restart: always
+    environment:
+      - TZ=Asia/Jakarta
 
   jenkins:
     image: jenkins/jenkins:lts
@@ -21,6 +23,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:rw
     restart: always
     privileged: true  # Opsional, tambahkan jika Jenkins memerlukan akses penuh
+    environment:
+      - TZ=Asia/Jakarta
 
   prometheus:
     image: prom/prometheus
@@ -30,6 +34,8 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     restart: always
+    environment:
+      - TZ=Asia/Jakarta
 
   grafana:
     image: grafana/grafana
@@ -39,6 +45,8 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
     restart: always
+    environment:
+      - TZ=Asia/Jakarta
 
 volumes:
   jenkins_home:
