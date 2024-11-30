@@ -9,7 +9,18 @@ pipeline {
         CI = 'true'
     }
     stages {
+        stage('Setup Environment') {
+            steps {
+                sh 'export PATH=$PATH:/usr/bin' // Pastikan Docker CLI tersedia di PATH
+            }
+        }
         stage('Build') {
+            agent {
+                docker {
+                    image 'node:lts-buster-slim'
+                    args '-u root -p 3000:3000' // Jalankan sebagai root
+                }
+            }
             steps {
                 sh 'npm install'
             }

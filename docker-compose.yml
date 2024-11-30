@@ -15,11 +15,12 @@ services:
     image: jenkins/jenkins:lts
     container_name: jenkins
     ports:
-      - "49001:8080" # Mengganti 49000 menjadi 49001
+      - "49001:8080" # Jenkins diakses melalui port 49001
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /usr/bin/docker:/usr/bin/docker # Mount binary Docker ke Jenkins
     restart: always
     privileged: true  # Opsional, tambahkan jika Jenkins memerlukan akses penuh
     environment:
@@ -51,13 +52,12 @@ services:
     image: nginx
     container_name: nginx
     ports:
-      - "9000:80" # NGINX reverse proxy untuk Jenkins
+      - "9000:80" # Reverse proxy untuk Jenkins
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - jenkins
     restart: always
-
 
 volumes:
   jenkins_home:
