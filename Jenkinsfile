@@ -2,44 +2,42 @@ pipeline {
     agent {
         docker {
             image 'node:lts-buster-slim'
-            args '-p 3000:3000'
+            args '-u root -p 3000:3000' // Menjalankan container sebagai root dengan pemetaan port
         }
     }
     environment {
-        CI = 'true'
+        CI = 'true' // Menetapkan variabel lingkungan CI
     }
     stages {
-        stage('Setup Environment') {
+        stage('Install Dependencies') {
             steps {
-                sh 'export PATH=$PATH:/usr/bin' // Pastikan Docker CLI tersedia di PATH
+                echo 'Installing dependencies...'
+                bat '''
+                npm install
+                '''
             }
         }
-        stage('Build') {
-            agent {
-                docker {
-                    image 'node:lts-buster-slim'
-                    args '-u root -p 3000:3000' // Jalankan sebagai root
-                }
-            }
+        stage('Run Tests') {
             steps {
-                sh 'npm install'
-            }
-        }
-        stage('Test') {
-            steps {
-                sh './jenkins/scripts/test.sh'
+                echo 'Running tests...'
+                bat '''
+                call jenkins\\scripts\\test.bat
+                '''
             }
         }
         stage('Manual Approval') {
             steps {
-                input message: 'Lanjutkan ke tahap Deploy?', ok: 'Proceed'
+                input message: 'Proceed to deploy?', ok: 'Yes'
             }
         }
         stage('Deploy') {
             steps {
-                sh './jenkins/scripts/deliver.sh'
-                sleep 60 // Jeda otomatis selama 1 menit
-                sh './jenkins/scripts/kill.sh'
+                echo 'Deploying application...'
+                bat '''
+                call jenkins\\scripts\\deliver.bat
+                timeout /t 60
+                call jenkins\\scripts\\kill.bat
+                '''
             }
         }
     }
