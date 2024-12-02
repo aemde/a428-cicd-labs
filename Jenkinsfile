@@ -12,7 +12,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing dependencies...'
-                bat '''
+                sh '''
                 npm install
                 '''
             }
@@ -20,8 +20,8 @@ pipeline {
         stage('Run Tests') {
             steps {
                 echo 'Running tests...'
-                bat '''
-                call jenkins\\scripts\\test.bat
+                sh '''
+                ./jenkins/scripts/test.sh
                 '''
             }
         }
@@ -33,10 +33,10 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying application...'
-                bat '''
-                call jenkins\\scripts\\deliver.bat
-                timeout /t 60
-                call jenkins\\scripts\\kill.bat
+                sh '''
+                ./jenkins/scripts/deliver.sh
+                sleep 60
+                ./jenkins/scripts/kill.sh
                 '''
             }
         }
