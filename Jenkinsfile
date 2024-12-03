@@ -2,6 +2,7 @@ pipeline {
     agent any
     environment {
         CI = 'true'
+        NODE_OPTIONS = '--openssl-legacy-provider'
     }
     stages {
         stage('Install Dependencies') {
@@ -24,11 +25,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying application...'
-                bat '''
-                npm run build
-                xcopy build\\* "C:\\path\\to\\deployment\\directory" /s /e /y
-                timeout /t 60
-                '''
+                bat 'npm run build'
             }
         }
     }
