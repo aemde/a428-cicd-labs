@@ -10,17 +10,14 @@ COPY package.json package-lock.json ./
 # Install dependencies
 RUN npm install
 
+# Tambahkan variabel lingkungan untuk mengatasi error OpenSSL
+ENV NODE_OPTIONS=--openssl-legacy-provider
+
 # Salin seluruh isi folder proyek ke dalam container
 COPY . .
 
-# Build aplikasi React
-RUN npm run build
-
-# Install serve untuk menyajikan aplikasi
-RUN npm install -g serve
-
-# Jalankan aplikasi React menggunakan serve
-CMD ["serve", "-s", "build", "-l", "3000"]
+# Jalankan aplikasi React
+CMD ["npm", "start"]
 
 # Expose port untuk aplikasi
 EXPOSE 3000
