@@ -25,13 +25,9 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying application...'
-                bat 'npm run build'
-                echo 'Running the application locally...'
-                bat 'start /B npx serve -s build -l 3000'
+                bat 'docker-compose down' // Hentikan container jika ada
+                bat 'docker-compose up -d --build' // Bangun dan jalankan container
                 echo 'Visit http://localhost:3000 to view the application.'
-                bat 'powershell -command "Start-Sleep -Seconds 60"'
-                echo 'Stopping the application server...'
-                bat 'taskkill /IM node.exe /F'
             }
         }
     }

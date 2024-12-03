@@ -13,8 +13,14 @@ RUN npm install
 # Salin seluruh isi folder proyek ke dalam container
 COPY . .
 
-# Jalankan aplikasi React
-CMD ["npm", "start"]
+# Build aplikasi React
+RUN npm run build
+
+# Install serve untuk menyajikan aplikasi
+RUN npm install -g serve
+
+# Jalankan aplikasi React menggunakan serve
+CMD ["serve", "-s", "build", "-l", "3000"]
 
 # Expose port untuk aplikasi
 EXPOSE 3000
