@@ -7,13 +7,15 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing dependencies...'
-                sh 'npm install'
+                // Gunakan 'bat' jika di Windows atau 'sh' jika di Linux/Git Bash
+                bat 'npm install'
             }
         }
         stage('Run Tests') {
             steps {
                 echo 'Running tests...'
-                sh './jenkins/scripts/test.sh'
+                // Ganti dengan 'bat' jika skrip adalah file .bat di Windows
+                bat './jenkins/scripts/test.bat'
             }
         }
         stage('Manual Approval') {
@@ -24,10 +26,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying application...'
-                sh '''
+                // Gunakan 'bat' jika di Windows atau 'sh' jika di Linux/Git Bash
+                bat '''
                 npm run build
-                cp -r build/* /path/to/deployment/directory
-                sleep 60
+                xcopy build\\* "C:\\path\\to\\deployment\\directory" /s /e /y
+                timeout /t 60
                 '''
             }
         }
