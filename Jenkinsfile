@@ -5,12 +5,18 @@ pipeline {
         NODE_OPTIONS = '--openssl-legacy-provider'
     }
     stages {
+        stage('Clean Workspace') {
+            steps {
+                echo 'Cleaning up existing workspace...'
+                dir('/app') {
+                    deleteDir() // Hapus semua file dan folder di direktori /app
+                }
+            }
+        }
         stage('Clone Repository') {
             steps {
                 echo 'Cloning repository...'
-                bat '''
-                git clone --branch react-app https://github.com/aemde/a428-cicd-labs.git /app
-                '''
+                bat 'git clone --branch react-app https://github.com/aemde/a428-cicd-labs.git /app'
             }
         }
         stage('Install Dependencies') {
@@ -39,8 +45,8 @@ pipeline {
                 echo 'Deploying application...'
                 dir('/app') {
                     bat '''
-                    docker ps -q --filter "name=prometheus" && docker stop prometheus && docker rm prometheus || echo "No existing prometheus container"
-                    docker ps -q --filter "name=grafana" && docker stop grafana && docker rm grafana || echo "No existing grafana container"
+                    docker ps -q --filter "name=prometheus" && docker stop prometheus && docker rm prometheus || echo "No prometheus container found"
+                    docker ps -q --filter "name=grafana" && docker stop grafana && docker rm grafana || echo "No grafana container found"
                     docker-compose down
                     docker-compose up -d --build
                     '''
