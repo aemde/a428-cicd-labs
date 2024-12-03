@@ -1,28 +1,19 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:lts-buster-slim'
-            args '-u root -p 3000:3000' // Menjalankan container sebagai root dengan pemetaan port
-        }
-    }
+    agent any
     environment {
-        CI = 'true' // Menetapkan variabel lingkungan CI
+        CI = 'true'
     }
     stages {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing dependencies...'
-                sh '''
-                npm install
-                '''
+                sh 'npm install'
             }
         }
         stage('Run Tests') {
             steps {
                 echo 'Running tests...'
-                sh '''
-                ./jenkins/scripts/test.sh
-                '''
+                sh './jenkins/scripts/test.sh'
             }
         }
         stage('Manual Approval') {
@@ -34,9 +25,9 @@ pipeline {
             steps {
                 echo 'Deploying application...'
                 sh '''
-                ./jenkins/scripts/deliver.sh
+                npm run build
+                cp -r build/* /path/to/deployment/directory
                 sleep 60
-                ./jenkins/scripts/kill.sh
                 '''
             }
         }
