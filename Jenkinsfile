@@ -27,8 +27,11 @@ pipeline {
                 echo 'Deploying application...'
                 bat 'npm run build'
                 echo 'Running the application locally...'
-                bat 'npx serve -s build -l 3000'
+                bat 'start /B npx serve -s build -l 3000'
                 echo 'Visit http://localhost:3000 to view the application.'
+                bat 'timeout /t 60'
+                echo 'Stopping the application server...'
+                bat 'taskkill /IM node.exe /F'
             }
         }
     }
