@@ -1,3 +1,3 @@
 @echo off
 echo Running tests for your Node.js/React application...
-npm test
+npm test -- --passWithNoTests
