@@ -11,6 +11,7 @@ pipeline {
                 dir('/app') {
                     deleteDir() // Hapus semua file dan folder di direktori /app
                 }
+                bat 'rmdir /S /Q "C:\\app"' // Untuk memastikan direktori benar-benar bersih
             }
         }
         stage('Clone Repository') {
