@@ -1,25 +1,29 @@
 version: '3.8'
 services:
   react-app:
-    build: .
+    build:
+      context: .  # Path ke direktori proyek
     container_name: react-app
     ports:
-      - "3000:3000"
+      - "3000:3000" # Port aplikasi React
     volumes:
-      - .:/app
-    command: sh -c "npm install && npm run build && npm start"
+      - .:/app # Mount direktori lokal ke dalam container
+    command: sh -c "npm install && npm run build && npm start" # Perintah build dan jalankan aplikasi
     restart: always
     environment:
-      - TZ=Asia/Jakarta
-      - NODE_OPTIONS=--openssl-legacy-provider
+      - TZ=Asia/Jakarta # Zona waktu lokal
+      - NODE_OPTIONS=--openssl-legacy-provider # Mengatasi masalah OpenSSL pada Node.js
+    depends_on:
+      - prometheus
+      - grafana
 
   prometheus:
     image: prom/prometheus
     container_name: prometheus
     ports:
-      - "9090:9090"
+      - "9090:9090" # Port untuk Prometheus
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml # File konfigurasi Prometheus
     restart: always
     environment:
       - TZ=Asia/Jakarta
@@ -28,12 +32,12 @@ services:
     image: grafana/grafana
     container_name: grafana
     ports:
-      - "3001:3000"
+      - "3001:3000" # Port untuk Grafana
     volumes:
-      - grafana_data:/var/lib/grafana
+      - grafana_data:/var/lib/grafana # Volume data untuk Grafana
     restart: always
     environment:
       - TZ=Asia/Jakarta
 
 volumes:
-  grafana_data:
+  grafana_data: # Volume untuk Grafana
