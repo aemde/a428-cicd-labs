@@ -12,20 +12,6 @@ services:
     environment:
       - TZ=Asia/Jakarta
 
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: jenkins
-    ports:
-      - "8080:8080"  # Menggunakan port default Jenkins
-      - "50000:50000"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock:rw
-    restart: always
-    privileged: true  # Memberikan akses penuh ke Jenkins
-    environment:
-      - TZ=Asia/Jakarta
-
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -49,5 +35,4 @@ services:
       - TZ=Asia/Jakarta
 
 volumes:
-  jenkins_home:
   grafana_data:
