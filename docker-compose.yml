@@ -8,7 +8,7 @@ services:
       - "3000:3000" # Port aplikasi React
     volumes:
       - .:/app # Mount direktori lokal ke dalam container
-    command: sh -c "npm install && npm run build && npm start" # Perintah build dan jalankan aplikasi
+    command: sh -c "npm install && npm run build && npx serve -s build -l 3000"
     restart: always
     environment:
       - TZ=Asia/Jakarta # Zona waktu lokal

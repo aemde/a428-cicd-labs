@@ -16,11 +16,8 @@ ENV NODE_OPTIONS=--openssl-legacy-provider
 # Salin seluruh isi folder proyek ke dalam container
 COPY . .
 
-# Bangun aplikasi React
-RUN npm run build
-
-# Jalankan aplikasi React menggunakan server statis
-CMD ["npx", "serve", "-s", "build", "-l", "3000"]
-
 # Expose port untuk aplikasi
 EXPOSE 3000
+
+# Jalankan aplikasi React
+CMD ["npm", "start"]
