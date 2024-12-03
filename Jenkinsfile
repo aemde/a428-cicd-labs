@@ -9,9 +9,15 @@ pipeline {
             steps {
                 echo 'Cleaning up existing workspace...'
                 dir('/app') {
-                    deleteDir() // Hapus semua file dan folder di direktori /app
+                    deleteDir() // Hapus semua file di direktori workspace
                 }
-                bat 'rmdir /S /Q "C:\\app"' // Untuk memastikan direktori benar-benar bersih
+                bat '''
+                if exist C:\\app (
+                    rmdir /S /Q "C:\\app"
+                ) else (
+                    echo "C:\\app does not exist, skipping removal."
+                )
+                '''
             }
         }
         stage('Clone Repository') {
