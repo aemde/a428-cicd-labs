@@ -15,7 +15,13 @@ pipeline {
                             try {
                                 bat '''
                                 if exist C:\\app (
-                                    powershell -Command "Get-Process | Out-File C:\\processes.txt; Start-Sleep -Seconds 2; Remove-Item -Recurse -Force C:\\app"
+                                    powershell -Command "
+                                    $lockedProcesses = Get-Process | Where-Object { $_.Modules -like '*C:\\app*' };
+                                    if ($lockedProcesses) { $lockedProcesses | Stop-Process -Force };
+                                    Get-Process | Out-File C:\\processes.txt;
+                                    Start-Sleep -Seconds 2;
+                                    Remove-Item -Recurse -Force C:\\app
+                                    "
                                 ) else (
                                     echo "C:\\app does not exist, skipping removal."
                                 )
