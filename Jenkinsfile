@@ -5,7 +5,7 @@ pipeline {
         NODE_OPTIONS = '--openssl-legacy-provider'
     }
     stages {
-        stage('Clean Workspace') {
+       stage('Clean Workspace') {
             steps {
                 echo 'Cleaning up existing workspace...'
                 dir('/app') {
@@ -16,12 +16,12 @@ pipeline {
                                 bat '''
                                 if exist C:\\app (
                                     powershell -Command "& {
-                                        $lockedProcesses = Get-Process | Where-Object { $_.Path -like 'C:\\app\\*' }
+                                        $lockedProcesses = Get-Process | Where-Object { $_.Path -like 'C:\\app*' };
                                         if ($lockedProcesses) {
-                                            $lockedProcesses | Stop-Process -Force
+                                            $lockedProcesses | Stop-Process -Force;
                                         }
-                                        Get-Process | Out-File C:\\processes.txt
-                                        Start-Sleep -Seconds 2
+                                        Get-Process | Out-File C:\\processes.txt;
+                                        Start-Sleep -Seconds 2;
                                         Remove-Item -Recurse -Force C:\\app
                                     }"
                                 ) else (
