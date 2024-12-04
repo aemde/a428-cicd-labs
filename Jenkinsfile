@@ -9,15 +9,21 @@ pipeline {
             steps {
                 echo 'Cleaning up existing workspace...'
                 dir('/app') {
-                    deleteDir()
+                    script {
+                        try {
+                            // Attempt to delete directory using PowerShell to handle locked files
+                            bat '''
+                            if exist C:\\app (
+                                powershell -Command "Start-Sleep -Seconds 2; Remove-Item -Recurse -Force C:\\app"
+                            ) else (
+                                echo "C:\\app does not exist, skipping removal."
+                            )
+                            '''
+                        } catch (Exception e) {
+                            echo "Failed to clean workspace: ${e.message}"
+                        }
+                    }
                 }
-                bat '''
-                if exist C:\\app (
-                    powershell -Command "Remove-Item -Recurse -Force C:\\app"
-                ) else (
-                    echo "C:\\app does not exist, skipping removal."
-                )
-                '''
             }
         }
         stage('Clone Repository') {
@@ -36,26 +42,38 @@ pipeline {
 
                 echo 'Installing dependencies...'
                 dir('/app') {
-                    bat '''
-                    if exist node_modules (
-                        powershell -Command "Remove-Item -Recurse -Force node_modules"
-                    )
-                    if not exist package-lock.json (
-                        echo "package-lock.json is missing. Running npm install to generate it..."
-                        npm install --legacy-peer-deps
-                    ) else (
-                        npm ci --legacy-peer-deps
-                    )
-                    '''
+                    script {
+                        try {
+                            bat '''
+                            if exist node_modules (
+                                powershell -Command "Remove-Item -Recurse -Force node_modules"
+                            )
+                            if not exist package-lock.json (
+                                echo "package-lock.json is missing. Running npm install to generate it..."
+                                npm install --legacy-peer-deps
+                            ) else (
+                                npm ci --legacy-peer-deps
+                            )
+                            '''
+                        } catch (Exception e) {
+                            echo "Failed to install dependencies: ${e.message}"
+                        }
+                    }
                 }
 
                 echo 'Verifying critical dependencies...'
                 dir('/app') {
-                    bat '''
-                    npm install tr46 --save-dev
-                    npm install extglob --save-dev
-                    npm install --legacy-peer-deps
-                    '''
+                    script {
+                        try {
+                            bat '''
+                            npm install tr46 --save-dev
+                            npm install extglob --save-dev
+                            npm install --legacy-peer-deps
+                            '''
+                        } catch (Exception e) {
+                            echo "Failed to install critical dependencies: ${e.message}"
+                        }
+                    }
                 }
             }
         }
@@ -63,7 +81,14 @@ pipeline {
             steps {
                 echo 'Running tests...'
                 dir('/app') {
-                    bat './jenkins/scripts/test.bat'
+                    script {
+                        try {
+                            bat './jenkins/scripts/test.bat'
+                        } catch (Exception e) {
+                            echo "Tests failed: ${e.message}"
+                            error "Stopping pipeline due to test failures."
+                        }
+                    }
                 }
             }
         }
@@ -90,7 +115,14 @@ pipeline {
     }
     post {
         cleanup {
-            cleanWs()
+            script {
+                try {
+                    echo 'Cleaning workspace...'
+                    cleanWs()
+                } catch (Exception e) {
+                    echo "Failed to clean workspace: ${e.message}"
+                }
+            }
         }
     }
 }
