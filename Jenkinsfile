@@ -16,10 +16,12 @@ pipeline {
                                 bat '''
                                 if exist C:\\app (
                                     powershell -Command "
-                                    $lockedProcesses = Get-Process | Where-Object { $_.Modules -like '*C:\\app*' };
-                                    if ($lockedProcesses) { $lockedProcesses | Stop-Process -Force };
-                                    Get-Process | Out-File C:\\processes.txt;
+                                    $lockedProcesses = Get-Process | Where-Object { $_.MainWindowTitle -like '*C:\\app*' };
+                                    if ($lockedProcesses) {
+                                        $lockedProcesses | Stop-Process -Force;
+                                    }
                                     Start-Sleep -Seconds 2;
+                                    Get-Process | Out-File C:\\processes.txt;
                                     Remove-Item -Recurse -Force C:\\app
                                     "
                                 ) else (
