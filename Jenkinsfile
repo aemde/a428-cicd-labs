@@ -26,7 +26,7 @@ pipeline {
                                     error "Failed to clean workspace after ${retries} attempts: ${e.message}"
                                 }
                                 echo "Retrying to clean workspace (${i + 1}/${retries})..."
-                                sleep(5)
+                                sleep(time: 5, unit: 'SECONDS')
                             }
                         }
                     }
