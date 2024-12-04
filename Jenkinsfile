@@ -9,18 +9,13 @@ pipeline {
             steps {
                 echo 'Cleaning up existing workspace...'
                 dir('/app') {
-                    deleteDir() // Hapus semua file di direktori workspace
+                    deleteDir()
                 }
                 bat '''
                 if exist C:\\app (
                     rmdir /S /Q "C:\\app"
                 ) else (
                     echo "C:\\app does not exist, skipping removal."
-                )
-                if exist C:\\app\\node_modules (
-                    rmdir /S /Q "C:\\app\\node_modules"
-                ) else (
-                    echo "C:\\app\\node_modules does not exist, skipping removal."
                 )
                 '''
             }
@@ -39,7 +34,12 @@ pipeline {
                     if exist node_modules (
                         rmdir /S /Q "node_modules"
                     )
-                    npm ci
+                    if not exist package-lock.json (
+                        echo "package-lock.json is missing. Running npm install to generate it..."
+                        npm install
+                    ) else (
+                        npm ci
+                    )
                     '''
                 }
             }
@@ -75,7 +75,7 @@ pipeline {
     }
     post {
         cleanup {
-            cleanWs() // Bersihkan workspace setelah pipeline selesai
+            cleanWs()
         }
     }
 }
