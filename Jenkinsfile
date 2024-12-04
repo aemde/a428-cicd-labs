@@ -30,7 +30,12 @@ pipeline {
             steps {
                 echo 'Installing dependencies...'
                 dir('/app') {
-                    bat 'npm install'
+                    bat '''
+                    if exist node_modules (
+                        rmdir /S /Q "node_modules"
+                    )
+                    npm ci
+                    '''
                 }
             }
         }
@@ -56,7 +61,7 @@ pipeline {
                     docker ps -q --filter "name=prometheus" && docker stop prometheus && docker rm prometheus || echo "No prometheus container found"
                     docker ps -q --filter "name=grafana" && docker stop grafana && docker rm grafana || echo "No grafana container found"
                     docker-compose down
-                    docker-compose up -d --build
+                    docker-compose up -d --build --force-recreate
                     '''
                 }
                 echo 'Visit http://localhost:3000 to view the application.'
