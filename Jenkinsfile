@@ -32,7 +32,7 @@ pipeline {
                 dir('/app') {
                     bat '''
                     if exist node_modules (
-                        rmdir /S /Q "node_modules"
+                        powershell -Command "Remove-Item -Recurse -Force node_modules"
                     )
                     if not exist package-lock.json (
                         echo "package-lock.json is missing. Running npm install to generate it..."
