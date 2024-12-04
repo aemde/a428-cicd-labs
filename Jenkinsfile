@@ -13,7 +13,7 @@ pipeline {
                 }
                 bat '''
                 if exist C:\\app (
-                    rmdir /S /Q "C:\\app"
+                    powershell -Command "Remove-Item -Recurse -Force C:\\app"
                 ) else (
                     echo "C:\\app does not exist, skipping removal."
                 )
