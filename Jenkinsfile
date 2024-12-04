@@ -49,11 +49,11 @@ pipeline {
                     '''
                 }
 
-                // Ensure tr46 and critical dependencies are installed
                 echo 'Verifying critical dependencies...'
                 dir('/app') {
                     bat '''
                     npm install tr46 --save-dev
+                    npm install extglob --save-dev
                     npm install --legacy-peer-deps
                     '''
                 }
