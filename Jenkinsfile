@@ -28,6 +28,12 @@ pipeline {
         }
         stage('Install Dependencies') {
             steps {
+                echo 'Setting npm cache directory...'
+                bat '''
+                npm config set cache C:\\npm-cache --global
+                npm cache clean --force
+                '''
+
                 echo 'Installing dependencies...'
                 dir('/app') {
                     bat '''
@@ -36,9 +42,9 @@ pipeline {
                     )
                     if not exist package-lock.json (
                         echo "package-lock.json is missing. Running npm install to generate it..."
-                        npm install
+                        npm install --legacy-peer-deps
                     ) else (
-                        npm ci
+                        npm ci --legacy-peer-deps
                     )
                     '''
                 }
