@@ -10,17 +10,24 @@ pipeline {
                 echo 'Cleaning up existing workspace...'
                 dir('/app') {
                     script {
-                        try {
-                            // Attempt to delete directory using PowerShell to handle locked files
-                            bat '''
-                            if exist C:\\app (
-                                powershell -Command "Start-Sleep -Seconds 2; Remove-Item -Recurse -Force C:\\app"
-                            ) else (
-                                echo "C:\\app does not exist, skipping removal."
-                            )
-                            '''
-                        } catch (Exception e) {
-                            echo "Failed to clean workspace: ${e.message}"
+                        def retries = 3
+                        for (int i = 0; i < retries; i++) {
+                            try {
+                                bat '''
+                                if exist C:\\app (
+                                    powershell -Command "Start-Sleep -Seconds 2; Remove-Item -Recurse -Force C:\\app"
+                                ) else (
+                                    echo "C:\\app does not exist, skipping removal."
+                                )
+                                '''
+                                break
+                            } catch (Exception e) {
+                                if (i == retries - 1) {
+                                    error "Failed to clean workspace after ${retries} attempts: ${e.message}"
+                                }
+                                echo "Retrying to clean workspace (${i + 1}/${retries})..."
+                                sleep(5)
+                            }
                         }
                     }
                 }
@@ -29,7 +36,14 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 echo 'Cloning repository...'
-                bat 'git clone --branch react-app https://github.com/aemde/a428-cicd-labs.git /app'
+                script {
+                    try {
+                        bat 'git clone --branch react-app https://github.com/aemde/a428-cicd-labs.git /app'
+                    } catch (Exception e) {
+                        echo "Failed to clone repository: ${e.message}"
+                        error "Stopping pipeline due to clone failure."
+                    }
+                }
             }
         }
         stage('Install Dependencies') {
@@ -39,7 +53,6 @@ pipeline {
                 npm config set cache C:\\npm-cache --global
                 npm cache clean --force
                 '''
-
                 echo 'Installing dependencies...'
                 dir('/app') {
                     script {
@@ -57,10 +70,10 @@ pipeline {
                             '''
                         } catch (Exception e) {
                             echo "Failed to install dependencies: ${e.message}"
+                            error "Stopping pipeline due to dependency installation failure."
                         }
                     }
                 }
-
                 echo 'Verifying critical dependencies...'
                 dir('/app') {
                     script {
@@ -72,6 +85,7 @@ pipeline {
                             '''
                         } catch (Exception e) {
                             echo "Failed to install critical dependencies: ${e.message}"
+                            error "Stopping pipeline due to critical dependency installation failure."
                         }
                     }
                 }
@@ -101,13 +115,20 @@ pipeline {
             steps {
                 echo 'Deploying application...'
                 dir('/app') {
-                    bat '''
-                    docker ps -q --filter "name=react-app" && docker stop react-app && docker rm react-app || echo "No react-app container found"
-                    docker ps -q --filter "name=prometheus" && docker stop prometheus && docker rm prometheus || echo "No prometheus container found"
-                    docker ps -q --filter "name=grafana" && docker stop grafana && docker rm grafana || echo "No grafana container found"
-                    docker-compose down
-                    docker-compose up -d --build --force-recreate
-                    '''
+                    script {
+                        try {
+                            bat '''
+                            docker ps -q --filter "name=react-app" && docker stop react-app && docker rm react-app || echo "No react-app container found"
+                            docker ps -q --filter "name=prometheus" && docker stop prometheus && docker rm prometheus || echo "No prometheus container found"
+                            docker ps -q --filter "name=grafana" && docker stop grafana && docker rm grafana || echo "No grafana container found"
+                            docker-compose down
+                            docker-compose up -d --build --force-recreate
+                            '''
+                        } catch (Exception e) {
+                            echo "Deployment failed: ${e.message}"
+                            error "Stopping pipeline due to deployment failure."
+                        }
+                    }
                 }
                 echo 'Visit http://localhost:3000 to view the application.'
             }
