@@ -52,6 +52,7 @@ pipeline {
                 echo 'Deploying application...'
                 dir('/app') {
                     bat '''
+                    docker ps -q --filter "name=react-app" && docker stop react-app && docker rm react-app || echo "No react-app container found"
                     docker ps -q --filter "name=prometheus" && docker stop prometheus && docker rm prometheus || echo "No prometheus container found"
                     docker ps -q --filter "name=grafana" && docker stop grafana && docker rm grafana || echo "No grafana container found"
                     docker-compose down
