@@ -15,18 +15,18 @@ pipeline {
                             try {
                                 bat '''
                                 if exist C:\\app (
-                                    powershell -Command "Start-Sleep -Seconds 2; Remove-Item -Recurse -Force C:\\app"
+                                    powershell -Command "Get-Process | Out-File C:\\processes.txt; Start-Sleep -Seconds 2; Remove-Item -Recurse -Force C:\\app"
                                 ) else (
                                     echo "C:\\app does not exist, skipping removal."
                                 )
                                 '''
                                 break
                             } catch (Exception e) {
+                                echo "Failed to clean workspace attempt (${i + 1}/${retries}): ${e.message}"
                                 if (i == retries - 1) {
-                                    error "Failed to clean workspace after ${retries} attempts: ${e.message}"
+                                    error "Failed to clean workspace after ${retries} attempts."
                                 }
-                                echo "Retrying to clean workspace (${i + 1}/${retries})..."
-                                sleep(time: 5, unit: 'SECONDS')
+                                sleep(time: 10, unit: 'SECONDS')
                             }
                         }
                     }
