@@ -17,6 +17,11 @@ pipeline {
                 ) else (
                     echo "C:\\app does not exist, skipping removal."
                 )
+                if exist C:\\app\\node_modules (
+                    rmdir /S /Q "C:\\app\\node_modules"
+                ) else (
+                    echo "C:\\app\\node_modules does not exist, skipping removal."
+                )
                 '''
             }
         }
@@ -66,6 +71,11 @@ pipeline {
                 }
                 echo 'Visit http://localhost:3000 to view the application.'
             }
+        }
+    }
+    post {
+        cleanup {
+            cleanWs() // Bersihkan workspace setelah pipeline selesai
         }
     }
 }
