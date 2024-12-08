@@ -133,7 +133,7 @@ pipeline {
                 }
             }
         }
-
+    }
 
         stage('Deploy Application') {
             steps {
