@@ -7,7 +7,7 @@ pipeline {
         APP_DIR = 'app'
         DOCKER_COMPOSE_FILE = 'docker-compose.yml'
         NVM_DIR = '/root/.nvm' // Hardcoded path to nvm
-        NODE_VERSION = '18'
+        NODE_VERSION = '18.20.5'
     }
 
     options {
@@ -110,12 +110,17 @@ pipeline {
                 dir("${APP_DIR}") {
                     sh '''
                     echo "Initializing NVM..."
-                    export NVM_DIR="${NVM_DIR}"
-                    [ -s "${NVM_DIR}/nvm.sh" ] && . "${NVM_DIR}/nvm.sh" || {
+                    export NVM_DIR="$HOME/.nvm"
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" || {
                         echo "NVM is not available. Stopping pipeline.";
                         exit 1;
                     }
-                    nvm use ${NODE_VERSION}
+                    nvm use ${NODE_VERSION} || {
+                        echo "Failed to switch to Node.js version ${NODE_VERSION}. Stopping pipeline.";
+                        exit 1;
+                    }
+                    echo "Node.js version: $(node -v)"
+                    echo "NPM version: $(npm -v)"
                     npm run build --openssl-legacy-provider || {
                         echo "Build failed. Stopping pipeline.";
                         exit 1;
@@ -124,6 +129,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Deploy Application') {
             steps {
