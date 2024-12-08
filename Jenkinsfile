@@ -88,7 +88,7 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Tests') {
             steps {
                 echo 'Running tests...'
                 dir("${APP_DIR}") {
@@ -104,7 +104,7 @@ pipeline {
             }
         }
 
-        stage('Build Application') {
+        stage('Build') {
             steps {
                 echo 'Building application...'
                 dir("${APP_DIR}") {
@@ -150,7 +150,7 @@ pipeline {
             }
         }
 
-        stage('Deploy Application') {
+        stage('Deploy') {
             steps {
                 echo 'Deploying application using Docker...'
                 dir("${APP_DIR}") {
