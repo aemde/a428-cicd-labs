@@ -165,7 +165,6 @@ pipeline {
                     fi
 
                     export PATH=$PATH:/usr/bin:/usr/local/bin
-                    docker-compose -f ${DOCKER_COMPOSE_FILE} down || true
                     docker-compose -f ${DOCKER_COMPOSE_FILE} up -d --build --force-recreate
                     '''
                 }
@@ -185,9 +184,6 @@ pipeline {
         }
         failure {
             echo 'Build or deployment failed. Please check logs.'
-        }
-        cleanup {
-            cleanWs()
         }
     }
 }
