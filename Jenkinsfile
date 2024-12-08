@@ -6,6 +6,7 @@ pipeline {
         BRANCH = 'react-app-wsl'
         APP_DIR = 'app'
         DOCKER_COMPOSE_FILE = 'docker-compose.yml'
+        NODE_VERSION = '18'
     }
 
     options {
@@ -35,6 +36,17 @@ pipeline {
         stage('Verify Node.js and npm') {
             steps {
                 sh '''
+                export NVM_DIR="$HOME/.nvm"
+                [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" || {
+                    echo "NVM is not available. Please ensure it is installed and sourced correctly.";
+                    exit 1;
+                }
+
+                nvm use ${NODE_VERSION} || {
+                    echo "Failed to switch to Node.js version ${NODE_VERSION}.";
+                    exit 1;
+                }
+
                 echo "Checking Node.js and npm versions..."
                 echo "Node.js version:"
                 node -v || echo "Node.js is not available."
@@ -49,20 +61,13 @@ pipeline {
                 echo 'Installing dependencies...'
                 dir("${APP_DIR}") {
                     sh '''
-                    # Pastikan NVM tersedia
                     export NVM_DIR="$HOME/.nvm"
                     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" || {
                         echo "NVM is not available. Please ensure it is installed and sourced correctly.";
                         exit 1;
                     }
+                    nvm use ${NODE_VERSION}
 
-                    # Gunakan Node.js versi 18
-                    nvm use 18 || {
-                        echo "Failed to switch to Node.js v18.";
-                        exit 1;
-                    }
-
-                    # Bersihkan cache npm dan instal dependensi
                     npm config set cache ~/.npm-cache --global
                     npm cache clean --force || true
                     [ -d node_modules ] && rm -rf node_modules
@@ -104,7 +109,7 @@ pipeline {
                         echo "NVM is not available. Stopping pipeline.";
                         exit 1;
                     }
-                    nvm use 18
+                    nvm use ${NODE_VERSION}
                     npm run build --openssl-legacy-provider || {
                         echo "Build failed. Stopping pipeline.";
                         exit 1;
