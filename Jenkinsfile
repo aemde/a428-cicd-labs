@@ -6,7 +6,7 @@ pipeline {
         BRANCH = 'react-app-wsl'
         APP_DIR = 'app'
         DOCKER_COMPOSE_FILE = 'docker-compose.yml'
-        PATH = "/home/am/.nvm/versions/node/v22.12.0/bin:$PATH" // Menambahkan path Node.js
+        PATH = "/home/am/.nvm/versions/node/v18.20.5/bin:$PATH" // Path Node.js v18
     }
 
     options {
@@ -52,6 +52,7 @@ pipeline {
                     sh '''
                     export NVM_DIR="$HOME/.nvm"
                     [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" # Load nvm
+                    nvm use 18
 
                     npm config set cache ~/.npm-cache --global
                     npm cache clean --force || true
@@ -89,7 +90,10 @@ pipeline {
                 echo 'Building application...'
                 dir("${APP_DIR}") {
                     sh '''
-                    npm run build || {
+                    export NVM_DIR="$HOME/.nvm"
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" # Load nvm
+                    nvm use 18
+                    npm run build --openssl-legacy-provider || {
                         echo "Build failed. Stopping pipeline."
                         exit 1
                     }
