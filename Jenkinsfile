@@ -121,7 +121,9 @@ pipeline {
                     }
                     echo "Node.js version: $(node -v)"
                     echo "NPM version: $(npm -v)"
-                    npm run build --openssl-legacy-provider || {
+                    # Set NODE_OPTIONS for OpenSSL compatibility
+                    export NODE_OPTIONS=--openssl-legacy-provider
+                    npm run build || {
                         echo "Build failed. Stopping pipeline.";
                         exit 1;
                     }
