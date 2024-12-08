@@ -140,11 +140,13 @@ pipeline {
                     echo "Current directory: $(pwd)"
                     echo "Files in directory:"
                     ls -la
+
                     if [ ! -f ${DOCKER_COMPOSE_FILE} ]; then
                         echo "${DOCKER_COMPOSE_FILE} is missing. Stopping pipeline.";
                         exit 1;
                     fi
 
+                    export PATH=$PATH:/usr/bin:/usr/local/bin
                     docker-compose -f ${DOCKER_COMPOSE_FILE} down || true
                     docker-compose -f ${DOCKER_COMPOSE_FILE} up -d --build --force-recreate
                     '''
