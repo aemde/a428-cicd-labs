@@ -5,11 +5,9 @@ pipeline {
         REPO_URL = 'https://github.com/aemde/a428-cicd-labs.git'
         BRANCH = 'react-app-wsl'
         APP_DIR = 'app'
-        DOCKER_COMPOSE_FILE = 'docker-compose.yml'
+        DOCKER_COMPOSE_FILE = '../docker-compose.yml'
         NVM_DIR = '/root/.nvm' // Hardcoded path to nvm
         NODE_VERSION = '18.20.5'
-        DOCKER_COMPOSE_FILE = '../docker-compose.yml'
-
     }
 
     options {
