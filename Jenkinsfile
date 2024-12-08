@@ -178,6 +178,7 @@ pipeline {
     post {
         always {
             echo 'Pipeline execution completed.'
+            archiveArtifacts artifacts: '**/log.txt', allowEmptyArchive: true
         }
         success {
             echo 'Build and deployment successful!'
