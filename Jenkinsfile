@@ -131,7 +131,6 @@ pipeline {
                 }
             }
         }
-    }
 
         stage('Deploy Application') {
             steps {
@@ -153,7 +152,7 @@ pipeline {
                 echo 'Deployment completed successfully. Visit your application at http://localhost:3000'
             }
         }
-
+    }
 
     post {
         always {
