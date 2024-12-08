@@ -6,7 +6,6 @@ pipeline {
         BRANCH = 'react-app-wsl'
         APP_DIR = 'app'
         DOCKER_COMPOSE_FILE = 'docker-compose.yml'
-        PATH = "/home/am/.nvm/versions/node/v18.20.5/bin:$PATH" // Path Node.js v18
     }
 
     options {
