@@ -132,6 +132,24 @@ pipeline {
             }
         }
 
+        stage('Manual Approval') {
+            steps {
+                script {
+                    def userInput = input(
+                        message: 'Lanjutkan ke tahap Deploy?',
+                        ok: 'Proceed',
+                        parameters: [
+                            choice(name: 'Confirmation', choices: ['Proceed', 'Abort'], description: 'Pilih opsi:')
+                        ]
+                    )
+
+                    if (userInput == 'Abort') {
+                        error('Pipeline dihentikan oleh pengguna.')
+                    }
+                }
+            }
+        }
+
         stage('Deploy Application') {
             steps {
                 echo 'Deploying application using Docker...'
@@ -152,6 +170,8 @@ pipeline {
                     '''
                 }
                 echo 'Deployment completed successfully. Visit your application at http://localhost:3000'
+                echo 'Application will run for 1 minute before the pipeline continues...'
+                sleep(time: 60, unit: 'SECONDS') // Menjeda eksekusi selama 60 detik
             }
         }
     }
