@@ -49,10 +49,20 @@ pipeline {
                 echo 'Installing dependencies...'
                 dir("${APP_DIR}") {
                     sh '''
+                    # Pastikan NVM tersedia
                     export NVM_DIR="$HOME/.nvm"
-                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" # Load nvm
-                    nvm use 18
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" || {
+                        echo "NVM is not available. Please ensure it is installed and sourced correctly.";
+                        exit 1;
+                    }
 
+                    # Gunakan Node.js versi 18
+                    nvm use 18 || {
+                        echo "Failed to switch to Node.js v18.";
+                        exit 1;
+                    }
+
+                    # Bersihkan cache npm dan instal dependensi
                     npm config set cache ~/.npm-cache --global
                     npm cache clean --force || true
                     [ -d node_modules ] && rm -rf node_modules
@@ -90,11 +100,14 @@ pipeline {
                 dir("${APP_DIR}") {
                     sh '''
                     export NVM_DIR="$HOME/.nvm"
-                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" # Load nvm
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" || {
+                        echo "NVM is not available. Stopping pipeline.";
+                        exit 1;
+                    }
                     nvm use 18
                     npm run build --openssl-legacy-provider || {
-                        echo "Build failed. Stopping pipeline."
-                        exit 1
+                        echo "Build failed. Stopping pipeline.";
+                        exit 1;
                     }
                     '''
                 }
@@ -107,8 +120,8 @@ pipeline {
                 dir("${APP_DIR}") {
                     sh '''
                     if [ ! -f ${DOCKER_COMPOSE_FILE} ]; then
-                        echo "${DOCKER_COMPOSE_FILE} is missing. Stopping pipeline."
-                        exit 1
+                        echo "${DOCKER_COMPOSE_FILE} is missing. Stopping pipeline.";
+                        exit 1;
                     fi
 
                     docker-compose down || true
