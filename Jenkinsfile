@@ -6,29 +6,42 @@ pipeline {
         BRANCH = 'react-app-wsl'
         APP_DIR = 'app'
         DOCKER_COMPOSE_FILE = 'docker-compose.yml'
+        PATH = "/home/am/.nvm/versions/node/v22.12.0/bin:$PATH" // Menambahkan path Node.js
     }
 
     options {
-        timestamps()
-        disableConcurrentBuilds()
-        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timestamps() // Menambahkan timestamp di log
+        disableConcurrentBuilds() // Hindari build bersamaan
+        buildDiscarder(logRotator(numToKeepStr: '10')) // Simpan hanya 10 build terakhir
     }
 
     stages {
         stage('Clean Workspace') {
             steps {
-                cleanWs()
+                cleanWs() // Gunakan plugin workspace cleanup
                 echo 'Workspace cleaned successfully.'
             }
         }
 
         stage('Clone Repository') {
             steps {
-                retry(3) {
+                retry(3) { // Coba ulang 3 kali jika clone gagal
                     echo "Cloning repository ${REPO_URL} (branch: ${BRANCH})..."
                     git branch: "${BRANCH}",
                         url: "${REPO_URL}"
                 }
+            }
+        }
+
+        stage('Verify Node.js and npm') {
+            steps {
+                sh '''
+                echo "Checking Node.js and npm versions..."
+                echo "Node.js version:"
+                node -v || echo "Node.js is not available."
+                echo "npm version:"
+                npm -v || echo "npm is not available."
+                '''
             }
         }
 
@@ -37,10 +50,8 @@ pipeline {
                 echo 'Installing dependencies...'
                 dir("${APP_DIR}") {
                     sh '''
-                    if ! command -v npm > /dev/null; then
-                        echo "npm is not installed. Please install Node.js and npm."
-                        exit 1
-                    fi
+                    export NVM_DIR="$HOME/.nvm"
+                    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # Load nvm
 
                     npm config set cache ~/.npm-cache --global
                     npm cache clean --force || true
@@ -92,13 +103,8 @@ pipeline {
                 echo 'Deploying application using Docker...'
                 dir("${APP_DIR}") {
                     sh '''
-                    if ! command -v docker > /dev/null; then
-                        echo "Docker is not installed. Please install Docker."
-                        exit 1
-                    fi
-
-                    if [ ! -f docker-compose.yml ]; then
-                        echo "docker-compose.yml is missing. Stopping pipeline."
+                    if [ ! -f ${DOCKER_COMPOSE_FILE} ]; then
+                        echo "${DOCKER_COMPOSE_FILE} is missing. Stopping pipeline."
                         exit 1
                     fi
 
@@ -122,7 +128,7 @@ pipeline {
             echo 'Build or deployment failed. Please check logs.'
         }
         cleanup {
-            cleanWs()
+            cleanWs() // Pastikan workspace dibersihkan setelah pipeline selesai
         }
     }
 }
