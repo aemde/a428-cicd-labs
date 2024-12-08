@@ -6,6 +6,7 @@ pipeline {
         BRANCH = 'react-app-wsl'
         APP_DIR = 'app'
         DOCKER_COMPOSE_FILE = 'docker-compose.yml'
+        NVM_DIR = '/root/.nvm' // Hardcoded path to nvm
         NODE_VERSION = '18'
     }
 
@@ -36,12 +37,15 @@ pipeline {
         stage('Verify Node.js and npm') {
             steps {
                 sh '''
-                export NVM_DIR="$HOME/.nvm"
-                [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" || {
+                echo "Initializing NVM..."
+                export NVM_DIR="${NVM_DIR}"
+                [ -s "${NVM_DIR}/nvm.sh" ] && . "${NVM_DIR}/nvm.sh" || {
                     echo "NVM is not available. Please ensure it is installed and sourced correctly.";
                     exit 1;
                 }
 
+                echo "Using Node.js version ${NODE_VERSION}..."
+                nvm install ${NODE_VERSION}
                 nvm use ${NODE_VERSION} || {
                     echo "Failed to switch to Node.js version ${NODE_VERSION}.";
                     exit 1;
@@ -61,8 +65,9 @@ pipeline {
                 echo 'Installing dependencies...'
                 dir("${APP_DIR}") {
                     sh '''
-                    export NVM_DIR="$HOME/.nvm"
-                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" || {
+                    echo "Initializing NVM..."
+                    export NVM_DIR="${NVM_DIR}"
+                    [ -s "${NVM_DIR}/nvm.sh" ] && . "${NVM_DIR}/nvm.sh" || {
                         echo "NVM is not available. Please ensure it is installed and sourced correctly.";
                         exit 1;
                     }
@@ -104,8 +109,9 @@ pipeline {
                 echo 'Building application...'
                 dir("${APP_DIR}") {
                     sh '''
-                    export NVM_DIR="$HOME/.nvm"
-                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" || {
+                    echo "Initializing NVM..."
+                    export NVM_DIR="${NVM_DIR}"
+                    [ -s "${NVM_DIR}/nvm.sh" ] && . "${NVM_DIR}/nvm.sh" || {
                         echo "NVM is not available. Stopping pipeline.";
                         exit 1;
                     }
