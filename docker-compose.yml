@@ -16,6 +16,8 @@ services:
     depends_on:
       - prometheus
       - grafana
+    networks:
+      - monitoring
 
   prometheus:
     image: prom/prometheus
@@ -27,6 +29,8 @@ services:
     restart: always
     environment:
       - TZ=Asia/Jakarta
+    networks:
+      - monitoring
 
   grafana:
     image: grafana/grafana
@@ -38,6 +42,12 @@ services:
     restart: always
     environment:
       - TZ=Asia/Jakarta
+    networks:
+      - monitoring
+
+networks:
+  monitoring:
+    driver: bridge
 
 volumes:
   grafana_data: # Volume untuk Grafana
