@@ -5,7 +5,7 @@ pipeline {
         NODE_OPTIONS = '--openssl-legacy-provider'
     }
     stages {
-       stage('Clean Workspace') {
+        stage('Clean Workspace') {
             steps {
                 echo 'Cleaning up existing workspace...'
                 dir('/app') {
@@ -13,20 +13,13 @@ pipeline {
                         def retries = 3
                         for (int i = 0; i < retries; i++) {
                             try {
-                                bat '''
-                                if exist C:\\app (
-                                    powershell -Command "& {
-                                     $lockedProcesses = Get-Process | Where-Object { $_.Path -like 'C:\\app\\*' };
-                                        if ($lockedProcesses) {
-                                           $lockedProcesses | Stop-Process -Force
-                                        };
-                                        Get-Process | Out-File C:\\processes.txt;
-                                        Start-Sleep -Seconds 2;
-                                        Remove-Item -Recurse -Force C:\\app
-                                    }"
-                                ) else (
-                                    echo "C:\\app does not exist, skipping removal."
-                                )
+                                sh '''
+                                if [ -d /app ]; then
+                                    pkill -f '/app/*' || echo "No locked processes found."
+                                    rm -rf /app || echo "Failed to remove /app"
+                                else
+                                    echo "/app does not exist, skipping removal."
+                                fi
                                 '''
                                 break
                             } catch (Exception e) {
@@ -46,7 +39,7 @@ pipeline {
                 echo 'Cloning repository...'
                 script {
                     try {
-                        bat 'git clone --branch react-app https://github.com/aemde/a428-cicd-labs.git /app'
+                        sh 'git clone --branch react-app https://github.com/aemde/a428-cicd-labs.git /app'
                     } catch (Exception e) {
                         echo "Failed to clone repository: ${e.message}"
                         error "Stopping pipeline due to clone failure."
@@ -57,43 +50,28 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Setting npm cache directory...'
-                bat '''
-                npm config set cache C:\\npm-cache --global
+                sh '''
+                npm config set cache /mnt/c/npm-cache --global
                 npm cache clean --force
                 '''
                 echo 'Installing dependencies...'
                 dir('/app') {
                     script {
                         try {
-                            bat '''
-                            if exist node_modules (
-                                powershell -Command "Remove-Item -Recurse -Force node_modules"
-                            )
-                            if not exist package-lock.json (
+                            sh '''
+                            if [ -d node_modules ]; then
+                                rm -rf node_modules
+                            fi
+                            if [ ! -f package-lock.json ]; then
                                 echo "package-lock.json is missing. Running npm install to generate it..."
                                 npm install --legacy-peer-deps
-                            ) else (
+                            else
                                 npm ci --legacy-peer-deps
-                            )
+                            fi
                             '''
                         } catch (Exception e) {
                             echo "Failed to install dependencies: ${e.message}"
                             error "Stopping pipeline due to dependency installation failure."
-                        }
-                    }
-                }
-                echo 'Verifying critical dependencies...'
-                dir('/app') {
-                    script {
-                        try {
-                            bat '''
-                            npm install tr46 --save-dev
-                            npm install extglob --save-dev
-                            npm install --legacy-peer-deps
-                            '''
-                        } catch (Exception e) {
-                            echo "Failed to install critical dependencies: ${e.message}"
-                            error "Stopping pipeline due to critical dependency installation failure."
                         }
                     }
                 }
@@ -105,7 +83,7 @@ pipeline {
                 dir('/app') {
                     script {
                         try {
-                            bat './jenkins/scripts/test.bat'
+                            sh './jenkins/scripts/test.sh'
                         } catch (Exception e) {
                             echo "Tests failed: ${e.message}"
                             error "Stopping pipeline due to test failures."
@@ -125,10 +103,8 @@ pipeline {
                 dir('/app') {
                     script {
                         try {
-                            bat '''
+                            sh '''
                             docker ps -q --filter "name=react-app" && docker stop react-app && docker rm react-app || echo "No react-app container found"
-                            docker ps -q --filter "name=prometheus" && docker stop prometheus && docker rm prometheus || echo "No prometheus container found"
-                            docker ps -q --filter "name=grafana" && docker stop grafana && docker rm grafana || echo "No grafana container found"
                             docker-compose down
                             docker-compose up -d --build --force-recreate
                             '''
