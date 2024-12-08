@@ -8,6 +8,8 @@ pipeline {
         DOCKER_COMPOSE_FILE = 'docker-compose.yml'
         NVM_DIR = '/root/.nvm' // Hardcoded path to nvm
         NODE_VERSION = '18.20.5'
+        DOCKER_COMPOSE_FILE = '../docker-compose.yml'
+
     }
 
     options {
@@ -138,19 +140,22 @@ pipeline {
                 echo 'Deploying application using Docker...'
                 dir("${APP_DIR}") {
                     sh '''
+                    echo "Current directory: $(pwd)"
+                    echo "Files in directory:"
+                    ls -la
                     if [ ! -f ${DOCKER_COMPOSE_FILE} ]; then
                         echo "${DOCKER_COMPOSE_FILE} is missing. Stopping pipeline.";
                         exit 1;
                     fi
 
-                    docker-compose down || true
-                    docker-compose up -d --build --force-recreate
+                    docker-compose -f ${DOCKER_COMPOSE_FILE} down || true
+                    docker-compose -f ${DOCKER_COMPOSE_FILE} up -d --build --force-recreate
                     '''
                 }
                 echo 'Deployment completed successfully. Visit your application at http://localhost:3000'
             }
         }
-    }
+
 
     post {
         always {
