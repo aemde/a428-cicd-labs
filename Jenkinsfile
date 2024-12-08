@@ -1,32 +1,34 @@
 pipeline {
-    agent any // Menjalankan pipeline di agent mana pun
+    agent any
 
     environment {
         REPO_URL = 'https://github.com/aemde/a428-cicd-labs.git'
         BRANCH = 'react-app-wsl'
-        APP_DIR = 'app' // Nama direktori kerja
-        DOCKER_COMPOSE_FILE = 'docker-compose.yml' // File docker-compose
+        APP_DIR = 'app'
+        DOCKER_COMPOSE_FILE = 'docker-compose.yml'
     }
 
     options {
-        timestamps() // Tambahkan timestamp di log
-        disableConcurrentBuilds() // Hindari build bersamaan
-        buildDiscarder(logRotator(numToKeepStr: '10')) // Simpan hanya 10 build terakhir
+        timestamps()
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
     stages {
         stage('Clean Workspace') {
             steps {
-                cleanWs() // Gunakan plugin workspace cleanup
+                cleanWs()
                 echo 'Workspace cleaned successfully.'
             }
         }
 
         stage('Clone Repository') {
             steps {
-                echo "Cloning repository ${REPO_URL} (branch: ${BRANCH})..."
-                git branch: "${BRANCH}",
-                    url: "${REPO_URL}"
+                retry(3) {
+                    echo "Cloning repository ${REPO_URL} (branch: ${BRANCH})..."
+                    git branch: "${BRANCH}",
+                        url: "${REPO_URL}"
+                }
             }
         }
 
@@ -35,14 +37,15 @@ pipeline {
                 echo 'Installing dependencies...'
                 dir("${APP_DIR}") {
                     sh '''
-                    # Bersihkan cache npm jika diperlukan
+                    if ! command -v npm > /dev/null; then
+                        echo "npm is not installed. Please install Node.js and npm."
+                        exit 1
+                    fi
+
                     npm config set cache ~/.npm-cache --global
                     npm cache clean --force || true
-
-                    # Hapus folder node_modules jika ada
                     [ -d node_modules ] && rm -rf node_modules
 
-                    # Instal dependencies
                     if [ ! -f package-lock.json ]; then
                         echo "package-lock.json is missing. Running npm install..."
                         npm install --legacy-peer-deps
@@ -59,7 +62,6 @@ pipeline {
                 echo 'Running tests...'
                 dir("${APP_DIR}") {
                     sh '''
-                    # Jalankan script testing
                     if [ -f ./jenkins/scripts/test.sh ]; then
                         chmod +x ./jenkins/scripts/test.sh
                         ./jenkins/scripts/test.sh
@@ -90,10 +92,17 @@ pipeline {
                 echo 'Deploying application using Docker...'
                 dir("${APP_DIR}") {
                     sh '''
-                    # Hentikan container lama
-                    docker-compose down || true
+                    if ! command -v docker > /dev/null; then
+                        echo "Docker is not installed. Please install Docker."
+                        exit 1
+                    fi
 
-                    # Jalankan container baru
+                    if [ ! -f docker-compose.yml ]; then
+                        echo "docker-compose.yml is missing. Stopping pipeline."
+                        exit 1
+                    fi
+
+                    docker-compose down || true
                     docker-compose up -d --build --force-recreate
                     '''
                 }
@@ -113,7 +122,7 @@ pipeline {
             echo 'Build or deployment failed. Please check logs.'
         }
         cleanup {
-            cleanWs() // Pastikan workspace dibersihkan setelah pipeline selesai
+            cleanWs()
         }
     }
 }
