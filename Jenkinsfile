@@ -10,22 +10,22 @@ pipeline {
     }
 
     options {
-        timestamps() // Menambahkan timestamp di log
-        disableConcurrentBuilds() // Hindari build bersamaan
-        buildDiscarder(logRotator(numToKeepStr: '10')) // Simpan hanya 10 build terakhir
+        timestamps()
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
     stages {
         stage('Clean Workspace') {
             steps {
-                cleanWs() // Gunakan plugin workspace cleanup
+                cleanWs()
                 echo 'Workspace cleaned successfully.'
             }
         }
 
         stage('Clone Repository') {
             steps {
-                retry(3) { // Coba ulang 3 kali jika clone gagal
+                retry(3) {
                     echo "Cloning repository ${REPO_URL} (branch: ${BRANCH})..."
                     git branch: "${BRANCH}",
                         url: "${REPO_URL}"
@@ -51,7 +51,7 @@ pipeline {
                 dir("${APP_DIR}") {
                     sh '''
                     export NVM_DIR="$HOME/.nvm"
-                    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # Load nvm
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" # Load nvm
 
                     npm config set cache ~/.npm-cache --global
                     npm cache clean --force || true
@@ -128,7 +128,7 @@ pipeline {
             echo 'Build or deployment failed. Please check logs.'
         }
         cleanup {
-            cleanWs() // Pastikan workspace dibersihkan setelah pipeline selesai
+            cleanWs()
         }
     }
 }
